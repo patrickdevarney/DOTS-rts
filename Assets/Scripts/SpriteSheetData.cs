@@ -11,6 +11,8 @@ public struct SpriteSheetData : IComponentData
     public int totalFrameCount;
     public float frameTimeRemaining;
     public float maxFrameTime;
+
+    public Vector4 uv;
 }
 
 public class SpriteSheetAnimate : JobComponentSystem
@@ -31,6 +33,12 @@ public class SpriteSheetAnimate : JobComponentSystem
             {
                 // stay on this frame
             }
+
+            float uvWidth = 0.09375f;//0.1875f;
+            float uvOffsetX = 0.09375f * data.currentFrame;
+            float uvHeight = 0.1875f;
+            float uvOffsetY = 0.8125f;
+            data.uv = new Vector4(uvWidth, uvHeight, uvOffsetX, uvOffsetY);
         }).Schedule(inputDeps);
     }
 }
@@ -39,17 +47,11 @@ public class SpriteSheetRender : ComponentSystem
 {
     protected override void OnUpdate()
     {
+        MaterialPropertyBlock materialPropertyBlock = new MaterialPropertyBlock();
         Entities.ForEach((ref SpriteSheetData data, ref Translation translation) =>
         {
-            MaterialPropertyBlock materialPropertyBlock = new MaterialPropertyBlock();
-            float uvWidth = 1f / 0.09375f;
-            float uvOffsetX = 0.09375f * data.currentFrame;
-            float uvHeight = 0.1875f;
-            float uvOffsetY = 0f;
-            Vector4 uv = new Vector4(uvWidth, uvHeight, uvOffsetX, uvOffsetY);
-            materialPropertyBlock.SetVectorArray("_MainTex_UV", new Vector4[] { uv });
-
-            Graphics.DrawMesh(SpriteTest.fooMesh, translation.Value, Quaternion.identity, SpriteTest.fooMaterial, 0, Camera.main, 0, materialPropertyBlock);
+            materialPropertyBlock.SetVectorArray("_MainTex_UV", new Vector4[] { data.uv });
+            Graphics.DrawMesh(SpriteTest.fooMesh, translation.Value, Quaternion.identity, SpriteTest.fooMaterial, 0, SpriteTest.mainCamera, 0, materialPropertyBlock);
         });
     }
 }
