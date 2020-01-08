@@ -4,6 +4,8 @@ using UnityEngine;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Transforms;
+using Unity.Collections;
+using System;
 
 public struct SpriteSheetData : IComponentData
 {
@@ -13,45 +15,25 @@ public struct SpriteSheetData : IComponentData
     public float maxFrameTime;
 
     public Vector4 uv;
+    public Matrix4x4 matrix;
 }
 
-public class SpriteSheetAnimate : JobComponentSystem
+public struct SpriteRenderer : ISharedComponentData, IEquatable<SpriteRenderer>
 {
-    protected override JobHandle OnUpdate(JobHandle inputDeps)
-    {
-        float deltaTime = Time.DeltaTime;
-        return Entities.ForEach((ref SpriteSheetData data) =>
-        {
-            data.frameTimeRemaining -= deltaTime;
-            if (data.frameTimeRemaining < 0f)
-            {
-                // proceed to next frame
-                data.frameTimeRemaining = data.maxFrameTime;
-                data.currentFrame = (data.currentFrame + 1) % data.totalFrameCount;
-            }
-            else
-            {
-                // stay on this frame
-            }
+    public Material material;
+    public Mesh mesh;
 
-            float uvWidth = 0.09375f;//0.1875f;
-            float uvOffsetX = 0.09375f * data.currentFrame;
-            float uvHeight = 0.1875f;
-            float uvOffsetY = 0.8125f;
-            data.uv = new Vector4(uvWidth, uvHeight, uvOffsetX, uvOffsetY);
-        }).Schedule(inputDeps);
+    public bool Equals(SpriteRenderer other)
+    {
+        return material == other.material &&
+            mesh == other.mesh;
     }
-}
 
-public class SpriteSheetRender : ComponentSystem
-{
-    protected override void OnUpdate()
+    public override int GetHashCode()
     {
-        MaterialPropertyBlock materialPropertyBlock = new MaterialPropertyBlock();
-        Entities.ForEach((ref SpriteSheetData data, ref Translation translation) =>
-        {
-            materialPropertyBlock.SetVectorArray("_MainTex_UV", new Vector4[] { data.uv });
-            Graphics.DrawMesh(SpriteTest.fooMesh, translation.Value, Quaternion.identity, SpriteTest.fooMaterial, 0, SpriteTest.mainCamera, 0, materialPropertyBlock);
-        });
+        int hash = 0;
+        if (!ReferenceEquals(material, null)) hash ^= material.GetHashCode();
+        if (!ReferenceEquals(mesh, null)) hash ^= mesh.GetHashCode();
+        return hash;
     }
 }
