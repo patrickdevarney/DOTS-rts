@@ -6,4 +6,5 @@ using Unity.Entities;
 public struct NavAgent : IComponentData
 {
     public float speed;
+    public float stoppingDistance;
 }

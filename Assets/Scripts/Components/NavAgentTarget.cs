@@ -1,7 +1,8 @@
 ﻿using Unity.Entities;
 using Unity.Transforms;
+using Unity.Mathematics;
 
 public struct NavAgentTarget : IComponentData
 {
-    public Entity Value;
+    public float3 position;
 }

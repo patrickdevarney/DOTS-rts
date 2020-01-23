@@ -13,12 +13,14 @@ public class SpriteSheetRenderSystem : JobComponentSystem
     List<Vector4> uvs = new List<Vector4>();
     CustomSampler sample1;
     CustomSampler sample2;
+    int shaderPropertyID;
 
     protected override void OnCreate()
     {
         base.OnCreate();
         sample1 = CustomSampler.Create("Sample1");
         sample2 = CustomSampler.Create("Sample2");
+        shaderPropertyID = Shader.PropertyToID("_MainTex_UV");
     }
 
     protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -27,8 +29,9 @@ public class SpriteSheetRenderSystem : JobComponentSystem
         JobHandle animateJob = (new SpriteSheetAnimateJob { deltaTime = Time.DeltaTime }).Schedule(this, inputDeps);
         animateJob.Complete();
 
+        // Need two MPBs because it will not render team2 sprites if they outnumber team1 sprites. "Property (_MainText_UV) exceeds previous array size (team2size vs team1size). Cap to previous size"
         MaterialPropertyBlock materialPropertyBlock = new MaterialPropertyBlock();
-        int shaderPropertyID = Shader.PropertyToID("_MainTex_UV");
+        MaterialPropertyBlock materialPropertyBlock2 = new MaterialPropertyBlock();
 
         NativeArray<SpriteSheetData> team1Sprites = new NativeArray<SpriteSheetData>();
         NativeArray<SpriteSheetData> team2Sprites = new NativeArray<SpriteSheetData>();
@@ -84,8 +87,8 @@ public class SpriteSheetRenderSystem : JobComponentSystem
                 matricies.Add(team2Sprites[i + j].matrix);
                 uvs.Add(team2Sprites[i + j].uv);
             }
-            materialPropertyBlock.SetVectorArray(shaderPropertyID, uvs);
-            Graphics.DrawMeshInstanced(SpriteTest.Instance.mesh, 0, SpriteTest.Instance.material2, matricies, materialPropertyBlock);
+            materialPropertyBlock2.SetVectorArray(shaderPropertyID, uvs);
+            Graphics.DrawMeshInstanced(SpriteTest.Instance.mesh, 0, SpriteTest.Instance.material2, matricies, materialPropertyBlock2);
         }
         sample2.End();
         team1Sprites.Dispose();

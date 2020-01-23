@@ -154,9 +154,14 @@ MonoBehaviour:
   mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   material: {fileID: 2100000, guid: 79d80922522ae411485225351ac1b618, type: 2}
   material2: {fileID: 2100000, guid: 95a174e563649184c8bd397f5757024f, type: 2}
-  team1Spawns: 1000
-  team2Spawns: 1000
+  team1Spawns: 100
+  team2Spawns: 100
   frameTime: 0.1
+  waveSize: 10
+  spawnWaves: 0
+  debugForceSpawnWave: 0
+  timeBetweenSpawns: 0
+  spawnBounds: {x: 16, y: 6}
 --- !u!4 &198976585
 Transform:
   m_ObjectHideFlags: 0
